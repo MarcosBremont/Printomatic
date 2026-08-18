@@ -99,14 +99,13 @@ function normalizeServerInput(raw) {
   let value = (raw || '').trim();
   if (!value) return null;
   if (!/^https?:\/\//i.test(value)) {
-    // Sin protocolo explícito: se asume el mismo protocolo de la página.
-    // Nota: si esta PWA corre sobre HTTPS (GitHub Pages) y el servidor local
-    // solo habla HTTP, el navegador bloqueará la petición por "mixed content".
-    // En ese caso el usuario debe escribir el protocolo explícitamente
-    // (ej. "http://192.168.1.50:8080") y habilitar contenido inseguro para
-    // este sitio, o exponer el servidor local por HTTPS.
-    const protocol = window.location.protocol === 'https:' ? 'https://' : 'http://';
-    value = protocol + value;
+    // Sin protocolo explícito: se asume HTTP, porque el servidor local del
+    // kiosko normalmente no tiene certificado TLS instalado. La PWA puede
+    // servirse por HTTPS (necesario para que Chrome permita conectarse a una
+    // IP de red local vía Private Network Access) y aun así hablarle en HTTP
+    // al servidor local; si el servidor sí tiene TLS, el usuario debe
+    // escribir "https://" explícitamente en el campo de servidor.
+    value = 'http://' + value;
   }
   return value.replace(/\/+$/, '');
 }
