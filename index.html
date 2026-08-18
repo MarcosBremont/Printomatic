@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Printomatic — Kiosko de Impresión</title>
+<meta name="description" content="Kiosko autoservicio para imprimir documentos PDF">
+<meta name="theme-color" content="#2563eb">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <svg class="brand-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Printomatic</span>
+  </div>
+
+  <div class="header-actions">
+    <button id="btn-status" class="status-pill status-unknown" type="button" aria-live="polite">
+      <span class="status-dot"></span>
+      <span id="status-text">Verificando…</span>
+    </button>
+    <button id="btn-settings" class="icon-btn" type="button" aria-label="Configurar servidor" title="Configurar servidor">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V20a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.96 18.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87A1.7 1.7 0 0 0 3 12.13H2.9a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.55 6.96a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.04-1.56V.9a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.05 3.55a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V8a1.7 1.7 0 0 0 1.56 1.04h.09a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.04Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="stepper" role="list" aria-label="Progreso de impresión">
+  <div class="step-dot active" data-step="1" role="listitem">1<span>Archivo</span></div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="2" role="listitem">2<span>Opciones</span></div>
+  <div class="step-line"></div>
+  <div class="step-dot" data-step="3" role="listitem">3<span>Pago</span></div>
+</div>
+
+<main class="app-main">
+
+  <!-- PASO 1: SUBIDA DE ARCHIVO -->
+  <section id="screen-upload" class="screen active">
+    <h1>Sube tu documento PDF</h1>
+    <p class="subtitle">Solo se admiten archivos en formato .pdf</p>
+
+    <label id="dropzone" class="dropzone" for="file-input" tabindex="0">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="dropzone-icon">
+        <path d="M12 16V4m0 0L7 9m5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="dropzone-title">Toca para elegir un archivo</span>
+      <span class="dropzone-hint">o arrastra tu PDF aquí</span>
+      <input id="file-input" type="file" accept="application/pdf,.pdf" hidden>
+    </label>
+
+    <div id="upload-error" class="alert alert-error hidden" role="alert"></div>
+
+    <div id="reading-indicator" class="reading-indicator hidden">
+      <span class="spinner"></span>
+      Leyendo documento…
+    </div>
+  </section>
+
+  <!-- PASO 2: OPCIONES + COTIZADOR -->
+  <section id="screen-options" class="screen">
+    <h1>Configura tu impresión</h1>
+
+    <div class="file-summary">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M14 2v6h6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <strong id="file-name">documento.pdf</strong>
+        <span id="file-pages">0 páginas</span>
+      </div>
+      <button id="btn-change-file" class="link-btn" type="button">Cambiar</button>
+    </div>
+
+    <div class="option-group">
+      <label class="option-label">Número de copias</label>
+      <div class="stepper-input">
+        <button id="btn-copies-minus" class="stepper-btn" type="button" aria-label="Restar copia">−</button>
+        <input id="input-copies" type="number" min="1" step="1" value="1" inputmode="numeric">
+        <button id="btn-copies-plus" class="stepper-btn" type="button" aria-label="Sumar copia">+</button>
+      </div>
+    </div>
+
+    <div class="option-group">
+      <label class="option-label">Modo de impresión</label>
+      <div class="segmented" role="radiogroup" aria-label="Modo de impresión">
+        <button class="segmented-btn active" data-color="false" type="button" role="radio" aria-checked="true">Blanco / Negro</button>
+        <button class="segmented-btn" data-color="true" type="button" role="radio" aria-checked="false">Color</button>
+      </div>
+    </div>
+
+    <div class="option-group">
+      <label class="option-label">Rango de páginas</label>
+      <div class="segmented" role="radiogroup" aria-label="Rango de páginas">
+        <button class="segmented-btn active" data-range="all" type="button" role="radio" aria-checked="true">Todas</button>
+        <button class="segmented-btn" data-range="custom" type="button" role="radio" aria-checked="false">Personalizado</button>
+      </div>
+      <input id="input-page-range" class="text-input hidden" type="text" placeholder="Ej: 1-3 o 2" inputmode="numeric">
+      <div id="range-error" class="field-error hidden"></div>
+    </div>
+
+    <div class="quote-card">
+      <div class="quote-row">
+        <span>Páginas a imprimir</span>
+        <strong id="quote-pages">0</strong>
+      </div>
+      <div class="quote-row">
+        <span>Precio por página</span>
+        <strong id="quote-unit-price">$0.00</strong>
+      </div>
+      <div class="quote-row">
+        <span>Copias</span>
+        <strong id="quote-copies">1</strong>
+      </div>
+      <div class="quote-total">
+        <span>Total a pagar</span>
+        <strong id="quote-total">$0.00</strong>
+      </div>
+    </div>
+
+    <button id="btn-to-confirm" class="btn-primary" type="button">Continuar</button>
+  </section>
+
+  <!-- PASO 3: CONFIRMACIÓN / PAGO -->
+  <section id="screen-confirm" class="screen">
+    <h1>Confirma tu orden</h1>
+
+    <div class="summary-card">
+      <div class="summary-row"><span>Archivo</span><strong id="c-file"></strong></div>
+      <div class="summary-row"><span>Páginas del documento</span><strong id="c-total-pages"></strong></div>
+      <div class="summary-row"><span>Rango a imprimir</span><strong id="c-range"></strong></div>
+      <div class="summary-row"><span>Modo</span><strong id="c-color"></strong></div>
+      <div class="summary-row"><span>Copias</span><strong id="c-copies"></strong></div>
+      <div class="summary-total"><span>Total</span><strong id="c-total"></strong></div>
+    </div>
+
+    <button id="btn-pay" class="btn-primary btn-pay" type="button">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M2 10h20" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+      Pagar e Imprimir
+    </button>
+    <button id="btn-back-options" class="link-btn" type="button">Volver a opciones</button>
+  </section>
+
+  <!-- PASO 4: ENVIANDO -->
+  <section id="screen-sending" class="screen">
+    <div class="center-state">
+      <span class="spinner spinner-lg"></span>
+      <h1>Enviando orden a la impresora…</h1>
+      <p class="subtitle">No cierres esta ventana ni desconectes el kiosko</p>
+    </div>
+  </section>
+
+  <!-- PASO 5: RESULTADO -->
+  <section id="screen-result" class="screen">
+    <div id="result-content" class="center-state"></div>
+    <button id="btn-new-order" class="btn-primary" type="button">Nueva impresión</button>
+  </section>
+
+</main>
+
+<!-- MODAL: CONFIGURACIÓN DE SERVIDOR -->
+<div id="modal-settings" class="modal-overlay hidden">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 id="modal-title">Conexión con el servidor</h2>
+    <p class="subtitle">Ingresa la dirección del servidor de impresión local (IP:puerto).</p>
+
+    <label class="field-label" for="input-server">Servidor</label>
+    <input id="input-server" class="text-input" type="text" placeholder="Ej: 192.168.1.50:8080">
+
+    <div id="settings-status" class="alert hidden"></div>
+
+    <div class="modal-actions">
+      <button id="btn-test-connection" class="btn-secondary" type="button">Probar conexión</button>
+      <button id="btn-save-server" class="btn-primary" type="button">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
